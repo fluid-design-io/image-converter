@@ -1,0 +1,18 @@
+{
+  "name": "sharp-image-converter",
+  "version": "1.0.0",
+  "description": "An image converter powered by Sharp.js",
+  "license": "MIT",
+  "author": {
+    "name": "Oliver Pan",
+    "email": "panjiuzhen@gmail.com",
+    "url": "https://github.com/fluid-design-io"
+  },
+  "main": "./dist/main/main.js",
+  "scripts": {
+    "rebuild": "node -r ts-node/register ../../.erb/scripts/electron-rebuild.js",
+    "postinstall": "npm run rebuild && npm run link-modules",
+    "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
+  },
+  "dependencies": {}
+}
