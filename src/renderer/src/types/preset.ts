@@ -60,7 +60,9 @@ const ResizeOptions = z.object({
 });
 
 export const presetSchema = z.object({
+  id: z.string(),
   imageFormat: z.string(),
+  name: z.string(),
   quality: z.coerce
     .number()
     .int()
@@ -86,7 +88,13 @@ export const presetSchema = z.object({
    * @default 72
    */
   resolution: z.coerce.number().int().positive().min(24).max(600).default(72),
-  exportLocation: z.string(),
+  // and cannot be `custom`
+  exportLocation: z
+    .string()
+    .min(1, 'Export location is required')
+    .refine((value) => value !== 'custom', {
+      message: 'Export location is required',
+    }),
 });
 
 export type Preset = z.infer<typeof presetSchema>;

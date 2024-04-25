@@ -53,23 +53,30 @@ function Header({ title, buttonGroups }: HeaderProps) {
                   description,
                   ...rest
                 } = button;
+                const hasIcon = !!button?.icon;
+                const Icon = hasIcon ? button.icon : null;
                 return (
                   <TooltipProvider key={`header-button-${buttonTitle}`}>
                     <Tooltip delayDuration={250}>
                       <TooltipTrigger asChild>
                         <Button
-                          size={button.icon ? 'icon' : 'sm'}
+                          size={hasIcon ? 'icon' : 'sm'}
                           variant={button.variant || 'ghost'}
                           key={`header-button-${buttonTitle}`}
                           onClick={onClick}
                           title={description || buttonTitle}
                           {...rest}
                         >
-                          {button.icon ? button.icon : buttonTitle}
+                          {hasIcon ? (
+                            // @ts-ignore
+                            <Icon className="size-4" />
+                          ) : (
+                            buttonTitle
+                          )}
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        {button.icon ? buttonTitle : null}
+                        {hasIcon ? buttonTitle : null}
                         {button.kbd && <KBD>{button.kbd}</KBD>}
                       </TooltipContent>
                     </Tooltip>

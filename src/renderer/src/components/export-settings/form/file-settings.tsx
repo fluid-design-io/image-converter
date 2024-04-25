@@ -41,10 +41,7 @@ function FileSettings() {
                 <FormLabel className="text-xs lg:flex-shrink-0 min-w-24">
                   Image Format
                 </FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-7 text-xs">
                       <SelectValue placeholder="WEBP" />

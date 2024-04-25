@@ -17,6 +17,10 @@ import { registerIpcHandlers } from './ipc-handlers';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
+import Store from 'electron-store';
+
+const store = new Store();
+
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -31,6 +35,19 @@ ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+console.log(`🟢🟢🟢 - Electron's Node version: ${process.versions.node}`);
+
+// Store Listener
+ipcMain.on('electron-store-get', async (event, val) => {
+  event.returnValue = store.get(val);
+});
+ipcMain.on('electron-store-set', async (event, key, val) => {
+  store.set(key, val);
+});
+ipcMain.on('electron-store-delete', async (event, key) => {
+  store.delete(key);
 });
 
 ipcMain.handle(

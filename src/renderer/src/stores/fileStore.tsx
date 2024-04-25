@@ -44,6 +44,7 @@ const createFileWithPreview = (file: File): Promise<FileWithPreview> => {
     const reader = new FileReader();
     reader.onload = async (event) => {
       const img = await getImage(file);
+      // @ts-ignore
       resolve({
         ...file,
         id: uuidv4(),
@@ -113,9 +114,6 @@ export const useFileStore = create<FileState>((set, get) => ({
     toast.info(toastMsg, {
       icon: <ImageIcon className="size-4" />,
     });
-
-    // notify submenu `clear-all` to enable
-    window.electron.ipcRenderer.emit('files-added');
 
     // setting new files
     set(

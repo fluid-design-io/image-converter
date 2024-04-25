@@ -1,3 +1,10 @@
+import { Preset } from './preset';
+
+export type ExportSetting =
+  | 'file-settings'
+  | 'image-sizing'
+  | 'export-location';
+
 // types/settingsType.ts
 export interface ConversionSettings {
   format: string; // e.g., 'jpg', 'png'
@@ -7,13 +14,7 @@ export interface ConversionSettings {
   namingOptions: string; // e.g., 'original', 'custom'
 }
 
-export interface Preset {
-  name: string;
-  savedFilePath: string;
-  conversionSettings: ConversionSettings;
-}
-
 export interface Settings {
   presets: Preset[];
-  // Add other settings here
+  exportSettings: Array<ExportSetting>;
 }

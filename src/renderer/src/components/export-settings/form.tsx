@@ -9,19 +9,27 @@ import ScrollCard from '../layout/scroll-card';
 
 import { Accordion, AccordionItem } from '@/components/ui/accordion';
 import { useFileStore } from '@/stores/fileStore';
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import ExportLocation from './form/export-location';
 import FileSettings from './form/file-settings';
 import ImageSizing from './form/image-sizing';
 
-function ExportSettingsForm() {
-  const { files } = useFileStore();
+import { useSettingsStore } from '@/stores/settingsStore';
+import { useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
+
+function ExportSettingsForm({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
+  const { files, loading, setLoading } = useFileStore();
+  const { exportSettings, setExportSettings } = useSettingsStore();
   const submitRef = useRef<HTMLButtonElement>(null);
   const form = useForm<Preset>({
     resolver: zodResolver(presetSchema),
     defaultValues: {
+      id: uuidv4(),
+      name: 'New Preset',
       imageFormat: 'webp',
       quality: 85,
       dontEnlarge: false,
@@ -36,12 +44,14 @@ function ExportSettingsForm() {
       resolution: 72,
       exportLocation: '',
     },
+    disabled: loading,
   });
 
   async function onSubmit(values: Preset) {
     // check if the form is valid
-    if (form.formState.isValid) {
+    if (presetSchema.safeParse(values)) {
       try {
+        setLoading(true);
         const filePaths = files?.map((file) => file.path);
         await window.electron.ipcRenderer.invoke(
           'process-images',
@@ -49,12 +59,15 @@ function ExportSettingsForm() {
           values,
         );
         toast.success('Images processed successfully');
+        navigate(`/completed/${encodeURIComponent(values.exportLocation)}`);
       } catch (error) {
         toast.error(
           'Failed to process images, please see the logs for more details',
         );
         // eslint-disable-next-line no-console
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     } else {
       toast.error('Please fill in all required fields');
@@ -74,18 +87,20 @@ function ExportSettingsForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form]);
   return (
-    <ScrollCard
-      title="Export Settings"
-      className="flex-1 pb-0"
-      scrollAreaClassName="h-48 md:h-56"
-    >
-      <CardContent>
-        <Form {...form}>
+    <Form {...form}>
+      {children}
+      <ScrollCard
+        title="Export Settings"
+        className="flex-1 pb-0"
+        scrollAreaClassName="h-[calc(100vh-14rem)]"
+      >
+        <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1">
             <Accordion
               type="multiple"
               className="w-full"
-              defaultValue={['file-settings']}
+              defaultValue={exportSettings}
+              onValueChange={setExportSettings}
             >
               <AccordionItem
                 value="file-settings"
@@ -116,9 +131,9 @@ function ExportSettingsForm() {
               Convert
             </Button>
           </form>
-        </Form>
-      </CardContent>
-    </ScrollCard>
+        </CardContent>
+      </ScrollCard>
+    </Form>
   );
 }
 

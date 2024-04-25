@@ -25,6 +25,7 @@ import { AccordionContent, AccordionTrigger } from './accordion-trigger';
 function ExportLocation() {
   const form = useFormContext<Preset>();
   const [commonFolders, setCommonFolders] = useState<CommonPaths>();
+  const [customPath, setCustomPath] = useState<string | null>(null);
 
   const handleOpenDialog = () => {
     window.electron.ipcRenderer.emit('open-directory-dialog');
@@ -32,6 +33,7 @@ function ExportLocation() {
 
   useEffect(() => {
     window.electron.ipcRenderer.on('directory-selected', (path: unknown) => {
+      setCustomPath(path as string);
       form.setValue('exportLocation', path as string);
     });
 
@@ -69,8 +71,13 @@ function ExportLocation() {
                   </FormLabel>
                   <div className="flex items-center gap-4 flex-1">
                     <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        if (value === 'custom') {
+                          handleOpenDialog();
+                        }
+                      }}
+                      value={field.value ?? 'custom'}
                     >
                       <FormControl>
                         <SelectTrigger className="h-7 text-xs">
@@ -78,7 +85,9 @@ function ExportLocation() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="custom">Specifc Folder</SelectItem>
+                        <SelectItem value={customPath || 'custom'}>
+                          Specifc Folder
+                        </SelectItem>
                         {Object.entries(commonFolders ?? {}).map(
                           ([key, value]) => (
                             <SelectItem

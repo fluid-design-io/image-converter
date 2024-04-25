@@ -3,6 +3,7 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 type FileChannels =
+  | 'open-directory'
   | 'open-directory-dialog'
   | 'directory-selected'
   | 'read-files'
@@ -34,6 +35,17 @@ const electronHandler = {
     },
     removeAllListeners(channel: Channels) {
       ipcRenderer.removeAllListeners(channel);
+    },
+  },
+  store: {
+    get(key: string) {
+      return ipcRenderer.sendSync('electron-store-get', key);
+    },
+    set(property: string, val: unknown) {
+      ipcRenderer.send('electron-store-set', property, val);
+    },
+    delete(key: string) {
+      ipcRenderer.send('electron-store-delete', key);
     },
   },
 };

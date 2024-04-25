@@ -3,24 +3,30 @@
 /* eslint-disable no-use-before-define */
 import useContextMenu from '@/hooks/use-context-menu';
 import { cn } from '@/lib/utils';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { Preset } from '@/types/preset';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
+import { useFormContext } from 'react-hook-form';
 import EditableText from '../ui/editable-text';
 import { Label } from '../ui/label';
 import { RadioGroupItem } from '../ui/radio-group';
+import { Separator } from '../ui/separator';
 
-// Task: build a context menu when right-clicking on the PresetItem component.
-/* menuitems:
-  - Rename
-  - Duplicate
-  - Delete
-  - Export
- */
-
-function PresetItem() {
+function PresetItem({
+  preset,
+  selectedPreset,
+  onSelected,
+}: {
+  preset: Preset;
+  selectedPreset: string | null;
+  onSelected: (id: string | null) => void;
+}) {
+  const form = useFormContext<Preset>();
+  const { addPreset, updatePreset, removePreset } = useSettingsStore();
   const { open, points, setOpen, setPoints } = useContextMenu();
   const [isEditing, setIsEditing] = React.useState(false);
-  const [active, setActive] = React.useState(false);
+  const active = selectedPreset === preset.id;
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     setOpen(true);
@@ -33,18 +39,22 @@ function PresetItem() {
           'bg-accent': open || active,
           'hover:bg-accent/30': !open && !active && !isEditing,
         })}
-        onClick={() => setActive(!active)}
-        onBlur={() => setActive(false)}
+        onClick={(e) => {
+          onSelected(preset.id);
+          e.currentTarget.querySelector('input')?.focus();
+        }}
         onDoubleClick={() => setIsEditing(true)}
         onContextMenu={handleContextMenu}
       >
-        <RadioGroupItem value="option-one" id="option-one" />
-        <Label htmlFor="option-one" className="flex-1">
+        <RadioGroupItem value={preset.id} id={preset.id} />
+        <Label htmlFor={preset.id} className="flex-1" asChild>
           <EditableText
-            value="Default"
+            value={preset.name}
             isEditing={isEditing}
             setIsEditing={setIsEditing}
-            onChange={() => {}}
+            onChange={(value) =>
+              updatePreset(preset.id, { ...preset, name: value })
+            }
           />
         </Label>
       </div>
@@ -64,9 +74,19 @@ function PresetItem() {
           >
             <div>
               <Item title="Rename" onClick={() => setIsEditing(true)} />
-              <Item title="Duplicate" onClick={() => {}} />
-              <Item title="Delete" onClick={() => {}} />
+              <Item
+                title="Update"
+                onClick={() =>
+                  updatePreset(preset.id, {
+                    ...form.getValues(),
+                    id: preset.id,
+                  })
+                }
+              />
+              <Item title="Duplicate" onClick={() => addPreset(preset)} />
               <Item title="Export" onClick={() => {}} />
+              <Separator className="my-1 opacity-50" />
+              <Item title="Delete" onClick={() => removePreset(preset.id)} />
             </div>
           </motion.div>
         )}

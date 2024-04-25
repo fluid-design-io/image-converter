@@ -8,7 +8,7 @@ export type HeaderButton = {
   title: string;
   description?: string;
   onClick: () => void;
-  icon?: React.ReactElement<{ className: string }>;
+  icon?: React.FC;
   // @ts-ignore
   variant?: typeof Button.defaultProps.variant;
   /**

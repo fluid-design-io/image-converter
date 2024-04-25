@@ -1,4 +1,4 @@
-import { dialog, ipcMain } from 'electron';
+import { dialog, ipcMain, shell } from 'electron';
 import { processImages } from './image-process';
 import { getCommonPaths } from './util';
 
@@ -47,5 +47,11 @@ export const registerIpcHandlers = () => {
       console.error('Error processing images:', error);
       throw error;
     }
+  });
+  /**
+   * Open directory in the system file manager
+   */
+  ipcMain.on('open-directory', (event, path) => {
+    shell.openPath(path);
   });
 };
