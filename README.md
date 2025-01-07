@@ -120,8 +120,7 @@ npm install
 
 ## Support
 
-- Desktop App: [GitHub Issues](https://github.com/fluid-design-io/image-converters/issues)
-- VS Code Extension: [Extension Repository](https://github.com/fluid-design-io/dynamic-image-processor)
+[GitHub Issues](https://github.com/fluid-design-io/image-converters/issues)
 
 ## License
 
