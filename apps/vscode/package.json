@@ -1,0 +1,70 @@
+{
+  "name": "dynamic-image-processor",
+  "displayName": "Dynamic Image Processor",
+  "description": "Automatically converts images to AVIF format and updates image tags with actual dimensions.",
+  "version": "0.0.2",
+  "icon": "images/icon.png",
+  "author": {
+    "name": "Oliver Pan",
+    "email": "panjiuzhen@gmail.com"
+  },
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Snippets"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fluid-design-io/dynamic-image-processor.git"
+  },
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.dynamicImage",
+        "title": "Dynamic Image Processor"
+      }
+    ],
+    "configuration": {
+      "title": "Dynamic Image Settings",
+      "properties": {
+        "dynamicImage.defaultPathPrefix": {
+          "type": "string",
+          "default": "/public",
+          "description": "Default path prefix for images (no trailing slash)"
+        },
+        "dynamicImage.defaultImageExtension": {
+          "type": "string",
+          "default": "png",
+          "description": "Default image extension"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "package": "pnpm vsce package --no-dependencies",
+    "publish": "pnpm vsce publish --no-dependencies",
+    "watch": "tsc -watch -p ./",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.88.0",
+    "@typescript-eslint/eslint-plugin": "^7.4.0",
+    "@typescript-eslint/parser": "^7.4.0",
+    "@vscode/test-cli": "^0.0.8",
+    "@vscode/test-electron": "^2.3.9",
+    "eslint": "^8.57.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "sharp": "^0.33.3"
+  }
+}
