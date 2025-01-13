@@ -1,8 +1,8 @@
 {
   "name": "dynamic-image-processor",
   "displayName": "Dynamic Image Processor",
-  "description": "Automatically converts images to AVIF format and updates image tags with actual dimensions.",
-  "version": "0.0.2",
+  "description": "Automatically converts images to AVIF (or other formats) and updates image tags with actual dimensions.",
+  "version": "0.0.4",
   "icon": "images/icon.png",
   "author": {
     "name": "Oliver Pan",
@@ -18,7 +18,9 @@
     "type": "git",
     "url": "https://github.com/fluid-design-io/dynamic-image-processor.git"
   },
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:extension.dynamicImage"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -33,12 +35,27 @@
         "dynamicImage.defaultPathPrefix": {
           "type": "string",
           "default": "/public",
-          "description": "Default path prefix for images (no trailing slash)"
+          "description": "Default path prefix for images (no trailing slash)."
+        },
+        "dynamicImage.lightSubfolder": {
+          "type": "string",
+          "default": "light",
+          "description": "Subfolder name for light-mode images."
+        },
+        "dynamicImage.darkSubfolder": {
+          "type": "string",
+          "default": "dark",
+          "description": "Subfolder name for dark-mode images."
         },
         "dynamicImage.defaultImageExtension": {
           "type": "string",
           "default": "png",
-          "description": "Default image extension"
+          "description": "Default file extension if none is provided."
+        },
+        "dynamicImage.cleanupOriginal": {
+          "type": "boolean",
+          "default": false,
+          "description": "Delete the original file after successful conversion."
         }
       }
     }
@@ -54,17 +71,17 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.6",
+    "@types/mocha": "^10.0.10",
     "@types/node": "18.x",
-    "@types/vscode": "^1.88.0",
+    "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^7.4.0",
     "@typescript-eslint/parser": "^7.4.0",
-    "@vscode/test-cli": "^0.0.8",
-    "@vscode/test-electron": "^2.3.9",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
     "eslint": "^8.57.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
-    "sharp": "^0.33.3"
+    "sharp": "^0.33.5"
   }
 }

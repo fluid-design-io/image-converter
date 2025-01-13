@@ -1,9 +1,14 @@
 import * as vscode from "vscode";
 
+/**
+ * Displays a progress notification if the task takes more than 500 ms.
+ * The user sees "Processing image..." and, upon completion, a success message.
+ */
 export function showDelayedNotification() {
   let notificationShown = false;
   let resolveProgress: (() => void) | null = null;
 
+  // Show progress if it takes more than 500ms
   const timeout = setTimeout(() => {
     vscode.window.withProgress(
       {
@@ -11,7 +16,7 @@ export function showDelayedNotification() {
         title: "Processing image...",
         cancellable: false,
       },
-      (progress, token) => {
+      () => {
         return new Promise<void>((resolve) => {
           resolveProgress = resolve;
           notificationShown = true;
@@ -27,19 +32,19 @@ export function showDelayedNotification() {
         resolveProgress();
       }
 
+      // Show a short success message after the progress bar
       if (notificationShown) {
-        // Show a temporary success message
         vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
             title: "Image processing complete.",
             cancellable: false,
           },
-          (progress, token) => {
+          () => {
             return new Promise<void>((resolve) => {
               setTimeout(() => {
-                resolve(); // This will close the notification after 2 seconds
-              }, 2000); // Auto-dismiss after 2000 milliseconds
+                resolve();
+              }, 2000);
             });
           }
         );
