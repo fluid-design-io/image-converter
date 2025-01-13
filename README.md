@@ -43,9 +43,11 @@ A VS Code extension that automates image optimization and dimension detection fo
 
 ```json
 {
-  "dynamicImage.defaultPathPrefixLight": "/images/light",
-  "dynamicImage.defaultPathPrefixDark": "/images/dark",
-  "dynamicImage.defaultImageExtension": "avif"
+  "dynamicImage.defaultPathPrefix": "/public",
+  "dynamicImage.lightSubfolder": "light",
+  "dynamicImage.darkSubfolder": "dark",
+  "dynamicImage.defaultImageExtension": "png",
+  "dynamicImage.cleanupOriginal": false
 }
 ```
 

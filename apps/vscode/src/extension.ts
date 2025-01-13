@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
-import sharp from "sharp";
 import * as fs from "fs";
 import * as path from "path";
 import { showDelayedNotification } from "./notification";
+
+import sharp from "sharp";
 
 /**
  * Converts an image to AVIF format using Sharp.
@@ -92,7 +93,7 @@ function filenameToAltText(filename: string) {
 export function activate(context: vscode.ExtensionContext) {
   // Register the main command
   const disposable = vscode.commands.registerCommand(
-    "extension.dynamicImage",
+    "processImage",
     async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {

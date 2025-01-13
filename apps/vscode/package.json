@@ -2,14 +2,14 @@
   "name": "dynamic-image-processor",
   "displayName": "Dynamic Image Processor",
   "description": "Automatically converts images to AVIF (or other formats) and updates image tags with actual dimensions.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "icon": "images/icon.png",
   "author": {
     "name": "Oliver Pan",
     "email": "panjiuzhen@gmail.com"
   },
   "engines": {
-    "vscode": "^1.88.0"
+    "vscode": "^1.93.1"
   },
   "categories": [
     "Snippets"
@@ -19,14 +19,15 @@
     "url": "https://github.com/fluid-design-io/dynamic-image-processor.git"
   },
   "activationEvents": [
-    "onCommand:extension.dynamicImage"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "extension.dynamicImage",
-        "title": "Dynamic Image Processor"
+        "command": "processImage",
+        "title": "Dynamic Image Processor",
+        "category": "images"
       }
     ],
     "configuration": {
@@ -70,18 +71,16 @@
     "lint": "eslint src --ext ts",
     "test": "vscode-test"
   },
-  "devDependencies": {
-    "@types/mocha": "^10.0.10",
-    "@types/node": "18.x",
-    "@types/vscode": "^1.96.0",
-    "@typescript-eslint/eslint-plugin": "^7.4.0",
-    "@typescript-eslint/parser": "^7.4.0",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1",
-    "eslint": "^8.57.0",
-    "typescript": "^5.7.3"
-  },
   "dependencies": {
     "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.93.1",
+    "@eslint/js": "^9.13.0",
+    "@stylistic/eslint-plugin": "^2.9.0",
+    "@types/node": "^20",
+    "eslint": "^9.13.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.16.0"
   }
 }
