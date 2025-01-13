@@ -1,0 +1,11 @@
+.vscode
+.DS_Store
+.pnpm
+.pnpm-lock.yaml
+
+# VS Code Extension
+.vscode-test
+.vscode-test-electron
+.vscode-test-cli
+
+dist
