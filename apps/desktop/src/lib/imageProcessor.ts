@@ -102,7 +102,6 @@ export class ImageProcessor {
     const results: ProcessedImage[] = [];
 
     for (const file of imageFiles) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
       const result = await this.processImage(file, options, onProgress);
       results.push(result);
     }
