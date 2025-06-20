@@ -2,7 +2,6 @@ import { createRoute } from "@tanstack/react-router";
 import { RootRoute } from "./__root";
 import ImageConverterPage from "@/pages/ImageConverterPage";
 import PresetsPage from "@/pages/PresetsPage";
-import SettingsPage from "@/pages/SettingsPage";
 
 // TODO: Steps to add a new route:
 // 1. Create a new page component in the '../pages/' directory (e.g., NewPage.tsx)
@@ -35,14 +34,4 @@ export const PresetsRoute = createRoute({
   component: PresetsPage,
 });
 
-export const SettingsRoute = createRoute({
-  getParentRoute: () => RootRoute,
-  path: "/settings",
-  component: SettingsPage,
-});
-
-export const rootTree = RootRoute.addChildren([
-  HomeRoute,
-  PresetsRoute,
-  SettingsRoute,
-]);
+export const rootTree = RootRoute.addChildren([HomeRoute, PresetsRoute]);

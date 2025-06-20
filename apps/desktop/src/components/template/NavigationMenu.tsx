@@ -1,14 +1,9 @@
-import React from "react";
-import { Link, useLocation } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
-import {
-  NavigationMenu as NavigationMenuBase,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "../ui/navigation-menu";
+import { navigationItems } from "@/lib/navItems";
 import { cn } from "@/utils";
+import { Link, useLocation } from "@tanstack/react-router";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import ToggleTheme from "../ToggleTheme";
 
 export default function NavigationMenu() {
   const { t } = useTranslation();
@@ -16,45 +11,21 @@ export default function NavigationMenu() {
 
   const isActive = (path: string) => pathname === path;
   return (
-    <NavigationMenuBase className="text-muted-foreground px-2 font-mono">
-      <NavigationMenuList>
-        <NavigationMenuItem>
-          <Link to="/">
-            <NavigationMenuLink
-              className={cn(
-                navigationMenuTriggerStyle(),
-                isActive("/") && "bg-accent",
-              )}
-            >
-              {t("titleHomePage")}
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link to="/presets">
-            <NavigationMenuLink
-              className={cn(
-                navigationMenuTriggerStyle(),
-                isActive("/presets") && "bg-accent",
-              )}
-            >
-              {t("titlePresetsPage")}
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link to="/settings">
-            <NavigationMenuLink
-              className={cn(
-                navigationMenuTriggerStyle(),
-                isActive("/settings") && "bg-accent",
-              )}
-            >
-              {t("titleSettingsPage")}
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenuBase>
+    <div className="flex justify-end gap-2">
+      {navigationItems.map((item) => (
+        <Link
+          to={item.path}
+          title={t(item.label + ".title")}
+          key={item.path}
+          className="p-1"
+        >
+          <item.icon
+            className={cn("size-5", isActive(item.path) && "text-primary")}
+          />
+          <span className="sr-only">{t(item.label + ".title")}</span>
+        </Link>
+      ))}
+      <ToggleTheme />
+    </div>
   );
 }

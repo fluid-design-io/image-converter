@@ -2,23 +2,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { produce } from "immer";
 import { type ImageProcessingOptions } from "../helpers/ipc/image/image-channels";
+import { ImageProcessor, type ProcessedImage } from "./imageProcessor";
 
 export interface Preset {
   id: string;
   name: string;
   options: ImageProcessingOptions;
-}
-
-export interface ProcessedImage {
-  id: string;
-  fileName: string;
-  originalSize: number;
-  processedSize: number;
-  originalData: ArrayBuffer;
-  processedData: ArrayBuffer;
-  options: ImageProcessingOptions;
-  status: "processing" | "completed" | "error";
-  error?: string;
 }
 
 export interface ImageConverterState {
@@ -35,6 +24,13 @@ export interface ImageConverterState {
   // Processed images
   processedImages: ProcessedImage[];
 
+  // Processing state
+  isProcessing: boolean;
+  processingProgress: {
+    current: number;
+    total: number;
+  };
+
   // Actions
   setCurrentOptions: (options: Partial<ImageProcessingOptions>) => void;
   setDestinationType: (type: "same" | "downloads" | "custom") => void;
@@ -50,6 +46,11 @@ export interface ImageConverterState {
   updateProcessedImage: (id: string, updates: Partial<ProcessedImage>) => void;
   removeProcessedImage: (id: string) => void;
   clearProcessedImages: () => void;
+
+  // Processing actions
+  processImages: (files: File[]) => Promise<void>;
+  setIsProcessing: (isProcessing: boolean) => void;
+  setProcessingProgress: (progress: { current: number; total: number }) => void;
 }
 
 const defaultOptions: ImageProcessingOptions = {
@@ -67,6 +68,8 @@ export const useImageConverterStore = create<ImageConverterState>()(
       customDestinationPath: "",
       presets: [],
       processedImages: [],
+      isProcessing: false,
+      processingProgress: { current: 0, total: 0 },
 
       // Actions
       setCurrentOptions: (options) =>
@@ -157,6 +160,85 @@ export const useImageConverterStore = create<ImageConverterState>()(
             state.processedImages = [];
           }),
         ),
+
+      // Processing actions
+      setIsProcessing: (isProcessing) =>
+        set(
+          produce((state) => {
+            state.isProcessing = isProcessing;
+          }),
+        ),
+
+      setProcessingProgress: (progress) =>
+        set(
+          produce((state) => {
+            state.processingProgress = progress;
+          }),
+        ),
+
+      processImages: async (files: File[]) => {
+        const state = get();
+        const imageFiles = files.filter((file) =>
+          file.type.startsWith("image/"),
+        );
+
+        set(
+          produce((state) => {
+            state.isProcessing = true;
+            state.processingProgress = { current: 0, total: imageFiles.length };
+          }),
+        );
+
+        try {
+          // Create progress callback to update store
+          const onProgress = (
+            imageId: string,
+            updates: Partial<ProcessedImage>,
+          ) => {
+            set(
+              produce((state) => {
+                const image = state.processedImages.find(
+                  (img: ProcessedImage) => img.id === imageId,
+                );
+                if (image) {
+                  Object.assign(image, updates);
+                }
+
+                // Update progress when image is completed or errored
+                if (
+                  updates.status === "completed" ||
+                  updates.status === "error"
+                ) {
+                  state.processingProgress.current += 1;
+                }
+              }),
+            );
+          };
+
+          // Process images using the ImageProcessor service
+          const processedImages = await ImageProcessor.processAndSaveImages(
+            imageFiles,
+            state.currentOptions,
+            state.destinationType,
+            state.customDestinationPath,
+            onProgress,
+          );
+
+          // Add all processed images to store
+          set(
+            produce((state) => {
+              state.processedImages.push(...processedImages);
+            }),
+          );
+        } finally {
+          set(
+            produce((state) => {
+              state.isProcessing = false;
+              state.processingProgress = { current: 0, total: 0 };
+            }),
+          );
+        }
+      },
     }),
     {
       name: "image-converter-storage",

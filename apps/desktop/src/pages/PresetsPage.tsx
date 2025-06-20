@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { OutputDestination } from "@/components/OutputDestination";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,15 +7,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Save, Trash2, Settings, ArrowLeft } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { ImageProcessingOptions } from "@/helpers/ipc/image/image-channels";
 import { useImageConverterStore } from "@/lib/store";
+import { Loader2, Save, Settings, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function PresetsPage() {
+  const { t } = useTranslation();
   const [presetName, setPresetName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -37,8 +40,11 @@ export default function PresetsPage() {
     loadPreset(presetId);
   };
 
-  const formatOptions = (options: any) => {
-    const parts = [options.format.toUpperCase(), `${options.quality}% quality`];
+  const formatOptions = (options: ImageProcessingOptions) => {
+    const parts = [
+      options.format.toUpperCase(),
+      `${options.quality}% ${t("presets.quality")}`,
+    ];
 
     if (options.resize) {
       parts.push(`${options.resize.type.replace("_", " ")}`);
@@ -47,52 +53,34 @@ export default function PresetsPage() {
     }
 
     if (options.quantize) {
-      parts.push("quantized");
+      parts.push(t("presets.quantized"));
     }
 
     return parts.join(", ");
   };
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link to="/">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Converter
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Preset Management</h1>
-            <p className="text-muted-foreground">
-              Save and manage your favorite processing settings
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
         {/* Save Current Settings */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Save className="h-5 w-5" />
-              Save Current Settings
+              {t("presets.saveCurrentSettings")}
             </CardTitle>
             <CardDescription>
-              Save your current processing options as a new preset
+              {t("presets.saveCurrentSettingsDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="preset-name">Preset Name</Label>
+              <Label htmlFor="preset-name">{t("presets.presetName")}</Label>
               <Input
                 id="preset-name"
                 value={presetName}
                 onChange={(e) => setPresetName(e.target.value)}
-                placeholder="Enter preset name"
+                placeholder={t("presets.enterPresetName")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     handleSavePreset();
@@ -102,7 +90,9 @@ export default function PresetsPage() {
             </div>
 
             <div className="bg-muted rounded-lg p-3">
-              <Label className="text-sm font-medium">Current Settings</Label>
+              <Label className="text-sm font-medium">
+                {t("presets.currentSettings")}
+              </Label>
               <p className="text-muted-foreground mt-1 text-sm">
                 {formatOptions(currentOptions)}
               </p>
@@ -118,28 +108,27 @@ export default function PresetsPage() {
               ) : (
                 <Save className="mr-2 h-4 w-4" />
               )}
-              Save Preset
+              {t("presets.savePreset")}
             </Button>
           </CardContent>
         </Card>
+        <OutputDestination />
 
         {/* Saved Presets */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Saved Presets ({presets.length})
+              {t("presets.savedPresets")} ({presets.length})
             </CardTitle>
-            <CardDescription>
-              Your saved presets for quick access
-            </CardDescription>
+            <CardDescription>{t("presets.savedPresetsDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {presets.length === 0 ? (
               <div className="py-8 text-center">
                 <Settings className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                 <p className="text-muted-foreground">
-                  No presets saved yet. Create your first preset to get started!
+                  {t("presets.noPresetsYet")}
                 </p>
               </div>
             ) : (
@@ -162,7 +151,7 @@ export default function PresetsPage() {
                           variant="outline"
                           onClick={() => handleLoadPreset(preset.id)}
                         >
-                          Load
+                          {t("presets.load")}
                         </Button>
                         <Button
                           size="sm"

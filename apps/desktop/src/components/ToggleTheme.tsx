@@ -1,12 +1,12 @@
-import { Moon } from "lucide-react";
-import React from "react";
-import { Button } from "@/components/ui/button";
 import { toggleTheme } from "@/helpers/theme_helpers";
+import { IconMoon } from "@tabler/icons-react";
+import React from "react";
 
 export default function ToggleTheme() {
   return (
-    <Button onClick={toggleTheme} size="icon">
-      <Moon size={16} />
-    </Button>
+    <button onClick={toggleTheme} className="p-1">
+      <span className="sr-only">Toggle theme</span>
+      <IconMoon className="size-5" />
+    </button>
   );
 }

@@ -21,23 +21,18 @@ interface ThemeModeContext {
   system: () => Promise<boolean>;
   current: () => Promise<"dark" | "light" | "system">;
 }
-interface ElectronWindow {
-  minimize: () => Promise<void>;
-  maximize: () => Promise<void>;
-  close: () => Promise<void>;
-}
-
-declare interface Window {
-  themeMode: ThemeModeContext;
-  electronWindow: ElectronWindow;
-  imageAPI: {
-    processImage: (
-      request: ProcessImageRequest,
-    ) => Promise<ProcessImageResponse>;
-    selectFolder: () => Promise<SelectFolderResponse>;
-    saveFile: (request: SaveFileRequest) => Promise<SaveFileResponse>;
-    getDownloadsPath: () => Promise<string>;
-  };
+declare global {
+  interface Window {
+    themeMode: ThemeModeContext;
+    imageAPI: {
+      processImage: (
+        request: ProcessImageRequest,
+      ) => Promise<ProcessImageResponse>;
+      selectFolder: () => Promise<SelectFolderResponse>;
+      saveFile: (request: SaveFileRequest) => Promise<SaveFileResponse>;
+      getDownloadsPath: () => Promise<string>;
+    };
+  }
 }
 
 export {};
