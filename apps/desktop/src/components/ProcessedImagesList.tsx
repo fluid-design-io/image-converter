@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
@@ -11,17 +10,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  Download,
-  Trash2,
-  CheckCircle,
-  XCircle,
-  Loader2,
-  Images,
-} from "lucide-react";
+import { type ProcessedImage } from "@/lib/imageProcessor";
 import { useImageConverterStore } from "@/lib/store";
 import { updateFileExtension } from "@/utils";
-import { type ProcessedImage } from "@/lib/imageProcessor";
+import {
+  CheckCircle,
+  Download,
+  Images,
+  Loader2,
+  Trash2,
+  XCircle,
+} from "lucide-react";
+import React, { useState } from "react";
 
 export function ProcessedImagesList() {
   const { processedImages, removeProcessedImage, clearProcessedImages } =
@@ -74,12 +74,7 @@ export function ProcessedImagesList() {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={processedImages.length === 0}
-        >
-          <Images className="mr-2 h-4 w-4" />
+        <Button variant="ghost" size="sm" className="text-xs">
           Processed Images ({processedImages.length})
           {processingImages.length > 0 && (
             <Badge variant="secondary" className="ml-2">
@@ -89,7 +84,7 @@ export function ProcessedImagesList() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-[600px] sm:w-[700px]">
+      <SheetContent className="w-[600px] sm:w-[700px] sm:max-w-none">
         <SheetHeader>
           <SheetTitle>Processed Images ({processedImages.length})</SheetTitle>
           <SheetDescription>

@@ -2,11 +2,11 @@ import { app, BrowserWindow } from "electron";
 import registerListeners from "./helpers/ipc/listeners-register";
 // "electron-squirrel-startup" seems broken when packaging with vite
 //import started from "electron-squirrel-startup";
-import path from "path";
 import {
   installExtension,
   REACT_DEVELOPER_TOOLS,
 } from "electron-devtools-installer";
+import path from "path";
 
 const inDevelopment = process.env.NODE_ENV === "development";
 
@@ -20,16 +20,17 @@ function createWindow() {
     webPreferences: {
       devTools: inDevelopment,
       contextIsolation: true,
-      nodeIntegration: true,
+      nodeIntegration: false,
       nodeIntegrationInSubFrames: false,
-
+      webSecurity: true,
+      allowRunningInsecureContent: false,
       preload: preload,
     },
     titleBarStyle: "hidden",
     transparent: true,
     vibrancy: "under-window",
   });
-  registerListeners(mainWindow);
+  registerListeners();
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);

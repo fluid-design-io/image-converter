@@ -9,11 +9,12 @@ export default function BaseLayout({
   children: React.ReactNode;
 }) {
   const { t } = useTranslation();
+
   return (
     <>
       <DragWindowRegion title={t("appName")} />
       <ProgressNavbar />
-      <main className="h-screen p-2 pt-3 pb-17">{children}</main>
+      <main className="h-screen p-2 pb-18">{children}</main>
     </>
   );
 }

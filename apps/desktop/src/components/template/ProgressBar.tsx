@@ -22,7 +22,7 @@ export default function ProgressBar() {
   }, [progressPercentage]);
 
   return (
-    <div className="bg-background/25 pointer-events-none fixed inset-x-0 top-0 z-[-1] h-16 w-full">
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-[-1] h-15.5 w-full bg-transparent">
       {/* Animated progress bar */}
       <div
         className={cn(

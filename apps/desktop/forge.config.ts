@@ -13,13 +13,27 @@ const config: ForgeConfig = {
     asar: {
       unpack: "**/node_modules/{sharp,@img}/**/*",
     },
-    icon: "src/assets/icon/icon",
+    icon: "src/assets/icon/icon.icns",
   },
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({}),
     new MakerDMG({
       icon: "src/assets/icon/icon.icns",
+      contents: [
+        {
+          x: 130,
+          y: 220,
+          type: "file",
+          path: "out/Image Converter-darwin-arm64/Image Converter.app",
+        },
+        {
+          x: 410,
+          y: 220,
+          type: "link",
+          path: "/Applications",
+        },
+      ],
     }),
     new MakerRpm({}),
     new MakerDeb({}),
