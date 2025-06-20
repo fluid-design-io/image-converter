@@ -7,6 +7,12 @@ import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { VitePlugin } from "@electron-forge/plugin-vite";
 import type { ForgeConfig } from "@electron-forge/shared-types";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
+import "dotenv/config";
+
+const appleId = process.env.VITE_APPLE_ID;
+const applePassword = process.env.VITE_APPLE_PASSWORD;
+const appleTeamId = process.env.VITE_APPLE_TEAM_ID;
+const appleSigningIdentity = process.env.VITE_APPLE_SIGNING_IDENTITY;
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -14,6 +20,14 @@ const config: ForgeConfig = {
       unpack: "**/node_modules/{sharp,@img}/**/*",
     },
     icon: "src/assets/icon/icon.icns",
+    osxSign: {
+      identity: appleSigningIdentity,
+    },
+    osxNotarize: {
+      appleId: appleId!,
+      appleIdPassword: applePassword!,
+      teamId: appleTeamId!,
+    },
   },
   rebuildConfig: {},
   makers: [
