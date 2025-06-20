@@ -1,23 +1,26 @@
-import type { ForgeConfig } from "@electron-forge/shared-types";
-import { MakerSquirrel } from "@electron-forge/maker-squirrel";
-import { MakerZIP } from "@electron-forge/maker-zip";
 import { MakerDeb } from "@electron-forge/maker-deb";
+import { MakerDMG } from "@electron-forge/maker-dmg";
 import { MakerRpm } from "@electron-forge/maker-rpm";
-import { VitePlugin } from "@electron-forge/plugin-vite";
-import { FusesPlugin } from "@electron-forge/plugin-fuses";
-import { FuseV1Options, FuseVersion } from "@electron/fuses";
+import { MakerSquirrel } from "@electron-forge/maker-squirrel";
 import { AutoUnpackNativesPlugin } from "@electron-forge/plugin-auto-unpack-natives";
+import { FusesPlugin } from "@electron-forge/plugin-fuses";
+import { VitePlugin } from "@electron-forge/plugin-vite";
+import type { ForgeConfig } from "@electron-forge/shared-types";
+import { FuseV1Options, FuseVersion } from "@electron/fuses";
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: {
       unpack: "**/node_modules/{sharp,@img}/**/*",
     },
+    icon: "src/assets/icon/icon",
   },
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({}),
-    new MakerZIP({}, ["darwin"]),
+    new MakerDMG({
+      icon: "src/assets/icon/icon.icns",
+    }),
     new MakerRpm({}),
     new MakerDeb({}),
   ],
