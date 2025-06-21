@@ -122,14 +122,26 @@ const config: ForgeConfig = {
   ],
   hooks: {
     packageAfterPrune: async (forgeConfig, buildPath) => {
-      console.log(buildPath);
       return new Promise((resolve, reject) => {
-        const npmInstall = spawn("npm", ["install"], {
-          cwd: buildPath,
-          stdio: "inherit",
-        });
+        const bunInstall = spawn(
+          "bun",
+          [
+            "install",
+            "sharp",
+            "--omit",
+            "dev",
+            "--omit",
+            "optional",
+            "--omit",
+            "peer",
+          ],
+          {
+            cwd: buildPath,
+            stdio: "inherit",
+          },
+        );
 
-        npmInstall.on("close", (code) => {
+        bunInstall.on("close", (code) => {
           if (code === 0) {
             resolve();
           } else {
@@ -137,7 +149,7 @@ const config: ForgeConfig = {
           }
         });
 
-        npmInstall.on("error", (error) => {
+        bunInstall.on("error", (error) => {
           reject(error);
         });
       });
