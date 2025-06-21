@@ -1,6 +1,7 @@
 import { app, dialog, ipcMain } from "electron";
 import fs from "fs";
 import path from "path";
+import sharp from "sharp";
 import {
   IMAGE_CHANNELS,
   type ProcessImageRequest,
@@ -19,9 +20,6 @@ export function addImageEventListeners() {
       request: ProcessImageRequest,
     ): Promise<ProcessImageResponse> => {
       try {
-        // Dynamic import of sharp to avoid bundling issues
-        const sharp = (await import("sharp")).default;
-
         const { imageData, options } = request;
         const buffer = Buffer.from(imageData);
 

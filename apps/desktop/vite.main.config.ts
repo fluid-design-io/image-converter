@@ -13,9 +13,6 @@ export default defineConfig({
       external: ["sharp"],
     },
   },
-  optimizeDeps: {
-    exclude: ["sharp"],
-  },
   define: {
     // Ensure sharp is treated as external
     "process.env.SHARP_IGNORE_GLOBAL_LIBVIPS": "1",

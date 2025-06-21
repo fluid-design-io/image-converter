@@ -1,6 +1,5 @@
+import { useThemeStore } from "@/lib/themeStore";
 import { ThemeMode } from "@/types/theme-mode";
-
-const THEME_KEY = "theme";
 
 export interface ThemePreferences {
   system: ThemeMode;
@@ -9,11 +8,14 @@ export interface ThemePreferences {
 
 export async function getCurrentTheme(): Promise<ThemePreferences> {
   const currentTheme = await window.themeMode.current();
-  const localTheme = localStorage.getItem(THEME_KEY) as ThemeMode | null;
+  const { local } = useThemeStore.getState();
+
+  // Update system theme in store
+  useThemeStore.getState().setSystemTheme(currentTheme);
 
   return {
     system: currentTheme,
-    local: localTheme,
+    local: local,
   };
 }
 
@@ -34,7 +36,8 @@ export async function setTheme(newTheme: ThemeMode) {
     }
   }
 
-  localStorage.setItem(THEME_KEY, newTheme);
+  // Update store instead of localStorage
+  useThemeStore.getState().setTheme(newTheme);
 }
 
 export async function toggleTheme() {
@@ -42,17 +45,34 @@ export async function toggleTheme() {
   const newTheme = isDarkMode ? "dark" : "light";
 
   updateDocumentTheme(isDarkMode);
-  localStorage.setItem(THEME_KEY, newTheme);
+
+  // Update store instead of localStorage
+  useThemeStore.getState().setTheme(newTheme);
 }
 
 export async function syncThemeWithLocal() {
-  const { local } = await getCurrentTheme();
+  const { local } = useThemeStore.getState();
   if (!local) {
     setTheme("system");
     return;
   }
 
   await setTheme(local);
+}
+
+export async function initializeTheme() {
+  const { local } = useThemeStore.getState();
+  const currentTheme = await window.themeMode.current();
+
+  // Update system theme
+  useThemeStore.getState().setSystemTheme(currentTheme);
+
+  // If no local theme is set, use system
+  if (!local) {
+    await setTheme("system");
+  } else {
+    await setTheme(local);
+  }
 }
 
 function updateDocumentTheme(isDarkMode: boolean) {

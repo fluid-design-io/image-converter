@@ -13,10 +13,10 @@ const inDevelopment = process.env.NODE_ENV === "development";
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
   const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    minWidth: 800,
-    minHeight: 600,
+    width: 1000,
+    height: 600,
+    minWidth: 600,
+    minHeight: 400,
     webPreferences: {
       devTools: inDevelopment,
       contextIsolation: true,

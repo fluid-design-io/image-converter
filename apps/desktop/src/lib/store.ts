@@ -1,6 +1,6 @@
+import { produce } from "immer";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { produce } from "immer";
 import { type ImageProcessingOptions } from "../helpers/ipc/image/image-channels";
 import { ImageProcessor, type ProcessedImage } from "./imageProcessor";
 

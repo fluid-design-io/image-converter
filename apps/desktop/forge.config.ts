@@ -7,7 +7,9 @@ import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { VitePlugin } from "@electron-forge/plugin-vite";
 import type { ForgeConfig } from "@electron-forge/shared-types";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
+import { spawn } from "child_process";
 import "dotenv/config";
+import path from "path";
 
 const appleId = process.env.VITE_APPLE_ID;
 const applePassword = process.env.VITE_APPLE_PASSWORD;
@@ -22,11 +24,44 @@ const config: ForgeConfig = {
     icon: "src/assets/icon/icon.icns",
     osxSign: {
       identity: appleSigningIdentity,
+      optionsForFile: (filePath) => {
+        if (
+          filePath.includes(
+            "Image Converter.app/Contents/MacOS/Image Converter",
+          )
+        ) {
+          return {
+            entitlements: path.join(process.cwd(), "entitlements.mac.plist"),
+            hardenedRuntime: true,
+          };
+        }
+        return {};
+      },
     },
     osxNotarize: {
       appleId: appleId!,
       appleIdPassword: applePassword!,
       teamId: appleTeamId!,
+    },
+    // macOS entitlements for file access permissions
+    protocols: [
+      {
+        name: "Image Converter",
+        schemes: ["imageconverter"],
+      },
+    ],
+    extendInfo: {
+      NSDownloadsFolderUsageDescription:
+        "This app needs access to your Downloads folder to save converted images.",
+      NSDocumentsFolderUsageDescription:
+        "This app needs access to your Documents folder to save converted images.",
+      NSDesktopFolderUsageDescription:
+        "This app needs access to your Desktop folder to save converted images.",
+      NSPhotoLibraryUsageDescription:
+        "This app needs access to your Photo Library to import and convert images.",
+      NSFileProviderDomainUsageDescription:
+        "This app needs access to files to convert images.",
+      LSApplicationCategoryType: "public.app-category.graphics-design",
     },
   },
   rebuildConfig: {},
@@ -85,6 +120,29 @@ const config: ForgeConfig = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
+  hooks: {
+    packageAfterPrune: async (forgeConfig, buildPath) => {
+      console.log(buildPath);
+      return new Promise((resolve, reject) => {
+        const npmInstall = spawn("npm", ["install"], {
+          cwd: buildPath,
+          stdio: "inherit",
+        });
+
+        npmInstall.on("close", (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error("process finished with error code " + code));
+          }
+        });
+
+        npmInstall.on("error", (error) => {
+          reject(error);
+        });
+      });
+    },
+  },
 };
 
 export default config;
