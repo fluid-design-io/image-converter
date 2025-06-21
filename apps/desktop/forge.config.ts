@@ -71,16 +71,16 @@ const config: ForgeConfig = {
       icon: "src/assets/icon/icon.icns",
       contents: [
         {
-          x: 130,
-          y: 220,
           type: "file",
           path: "out/Image Converter-darwin-arm64/Image Converter.app",
+          x: 130,
+          y: 120,
         },
         {
-          x: 410,
-          y: 220,
           type: "link",
           path: "/Applications",
+          x: 410,
+          y: 120,
         },
       ],
     }),
@@ -125,16 +125,7 @@ const config: ForgeConfig = {
       return new Promise((resolve, reject) => {
         const bunInstall = spawn(
           "bun",
-          [
-            "install",
-            "sharp",
-            "--omit",
-            "dev",
-            "--omit",
-            "optional",
-            "--omit",
-            "peer",
-          ],
+          ["install", "sharp", "--omit", "dev", "--omit", "peer"],
           {
             cwd: buildPath,
             stdio: "inherit",
