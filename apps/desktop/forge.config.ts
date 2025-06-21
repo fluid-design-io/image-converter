@@ -73,14 +73,14 @@ const config: ForgeConfig = {
         {
           type: "file",
           path: "out/Image Converter-darwin-arm64/Image Converter.app",
-          x: 130,
-          y: 120,
+          x: 170,
+          y: 350,
         },
         {
           type: "link",
           path: "/Applications",
-          x: 410,
-          y: 120,
+          x: 550,
+          y: 350,
         },
       ],
     }),
