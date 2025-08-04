@@ -1,0 +1,12 @@
+.vscode
+.DS_Store
+.pnpm
+
+# VS Code Extension
+.vscode-test
+.vscode-test-electron
+.vscode-test-cli
+
+dist
+
+node_modules

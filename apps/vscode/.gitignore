@@ -1,12 +1,13 @@
-.vscode
+.cache
 .DS_Store
-.pnpm
-
-# VS Code Extension
-.vscode-test
-.vscode-test-electron
-.vscode-test-cli
-
+.idea
+*.log
+*.tgz
+*.vsix
+coverage
 dist
-
+lib-cov
+logs
 node_modules
+temp
+src/generated

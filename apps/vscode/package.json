@@ -1,87 +1,129 @@
 {
-  "name": "dynamic-image-processor",
-  "displayName": "Dynamic Image Processor",
-  "description": "Automatically converts images to AVIF (or other formats) and updates image tags with actual dimensions.",
-  "version": "0.0.4",
-  "icon": "images/icon.png",
-  "author": {
-    "name": "Oliver Pan",
-    "email": "panjiuzhen@gmail.com"
-  },
+  "publisher": "fluid-design-io",
+  "name": "tiny-image",
+  "displayName": "Tiny Image",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.4.1",
+  "main": "./dist/index.js",
+  "icon": "res/icon.png",
+  "files": [
+    "LICENSE.md",
+    "dist/*",
+    "res/*"
+  ],
   "engines": {
-    "vscode": "^1.88.0"
+    "vscode": "^1.97.0"
   },
-  "categories": [
-    "Snippets"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/fluid-design-io/dynamic-image-processor.git"
-  },
-  "activationEvents": [
-    "onCommand:extension.dynamicImage"
-  ],
-  "main": "./out/extension.js",
+  "activationEvents": [],
   "contributes": {
     "commands": [
       {
-        "command": "extension.dynamicImage",
-        "title": "Dynamic Image Processor"
+        "command": "compress",
+        "title": "Compress Images",
+        "shortTitle": "ti"
+      },
+      {
+        "command": "compress-interactive",
+        "title": "Compress Images with Options...",
+        "shortTitle": "tio"
       }
     ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "compress",
+          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|webp|avif|tiff|tif|bmp|gif)$/i",
+          "group": "7_modification"
+        },
+        {
+          "command": "compress-interactive",
+          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|webp|avif|tiff|tif|bmp|gif)$/i",
+          "group": "7_modification"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "compress",
+          "when": "true"
+        },
+        {
+          "command": "compress-interactive",
+          "when": "true"
+        }
+      ]
+    },
     "configuration": {
-      "title": "Dynamic Image Settings",
+      "title": "Tiny Image Settings",
+      "description": "Settings for Tiny Image",
       "properties": {
-        "dynamicImage.defaultPathPrefix": {
-          "type": "string",
-          "default": "/public",
-          "description": "Default path prefix for images (no trailing slash)."
+        "tiny-image.quality": {
+          "type": "number",
+          "title": "Default Compress Quality",
+          "description": "The default image quality for the compressed image (0-100)",
+          "default": 85,
+          "minimum": 0,
+          "maximum": 100
         },
-        "dynamicImage.lightSubfolder": {
+        "tiny-image.format": {
           "type": "string",
-          "default": "light",
-          "description": "Subfolder name for light-mode images."
-        },
-        "dynamicImage.darkSubfolder": {
-          "type": "string",
-          "default": "dark",
-          "description": "Subfolder name for dark-mode images."
-        },
-        "dynamicImage.defaultImageExtension": {
-          "type": "string",
-          "default": "png",
-          "description": "Default file extension if none is provided."
-        },
-        "dynamicImage.cleanupOriginal": {
-          "type": "boolean",
-          "default": false,
-          "description": "Delete the original file after successful conversion."
+          "title": "Default Compress Format",
+          "description": "The default image format for the compressed image",
+          "default": "same-as-source",
+          "enum": [
+            "same-as-source",
+            "jpg",
+            "png",
+            "webp",
+            "avif"
+          ],
+          "enumItemLabels": [
+            "Same as Source",
+            "JPG",
+            "PNG",
+            "WebP",
+            "AVIF"
+          ]
         }
       }
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run compile",
-    "compile": "tsc -p ./",
-    "package": "pnpm vsce package --no-dependencies",
-    "publish": "pnpm vsce publish --no-dependencies",
-    "watch": "tsc -watch -p ./",
-    "pretest": "pnpm run compile && pnpm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "vscode-test"
+    "build": "tsdown src/index.ts --external vscode",
+    "dev": "nr build --watch --sourcemap",
+    "prepare": "nr update",
+    "update": "vscode-ext-gen --output src/generated/meta.ts",
+    "lint": "eslint .",
+    "vscode:prepublish": "nr build",
+    "publish": "vsce publish --no-dependencies",
+    "pack": "vsce package --no-dependencies",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit",
+    "release": "bumpp && nr publish"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.10",
-    "@types/node": "18.x",
-    "@types/vscode": "^1.96.0",
-    "@typescript-eslint/eslint-plugin": "^7.4.0",
-    "@typescript-eslint/parser": "^7.4.0",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1",
-    "eslint": "^8.57.0",
-    "typescript": "^5.7.3"
+    "@antfu/eslint-config": "^4.19.0",
+    "@antfu/ni": "^23.3.1",
+    "@types/node": "^22.17.0",
+    "@types/vscode": "^1.102.0",
+    "@vscode/vsce": "^3.6.0",
+    "bumpp": "^10.2.2",
+    "eslint": "^9.32.0",
+    "esno": "^4.8.0",
+    "pnpm": "^10.14.0",
+    "reactive-vscode": "^0.2.22",
+    "tsdown": "^0.9.9",
+    "typescript": "^5.9.2",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4",
+    "vscode-ext-gen": "^1.1.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "dependencies": {
-    "sharp": "^0.33.5"
+    "sharp": "^0.34.3"
   }
 }
