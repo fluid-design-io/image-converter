@@ -15,18 +15,15 @@
   "engines": {
     "vscode": "^1.97.0"
   },
-  "activationEvents": [],
   "contributes": {
     "commands": [
       {
         "command": "compress",
-        "title": "Compress Images",
-        "shortTitle": "ti"
+        "title": "Compress Images"
       },
       {
         "command": "compress-interactive",
-        "title": "Compress Images with Options...",
-        "shortTitle": "tio"
+        "title": "Compress Images with Options..."
       }
     ],
     "menus": {
@@ -40,16 +37,6 @@
           "command": "compress-interactive",
           "when": "resourceExtname =~ /\\.(jpg|jpeg|png|webp|avif|tiff|tif|bmp|gif)$/i",
           "group": "7_modification"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "compress",
-          "when": "true"
-        },
-        {
-          "command": "compress-interactive",
-          "when": "true"
         }
       ]
     },

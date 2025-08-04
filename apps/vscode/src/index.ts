@@ -2,330 +2,145 @@ import { defineExtension, useCommand } from "reactive-vscode";
 import { ProgressLocation, Uri, window } from "vscode";
 import { config } from "./config";
 import { commands } from "./generated/meta";
-import { compressImage, getImageInfo, isImageFile } from "./image-processor";
+import {
+	type CompressionOptions,
+	compressImage,
+	isImageFile,
+} from "./image-processor";
 import { formatSize, logger } from "./utils";
 
 const { activate, deactivate } = defineExtension(() => {
-	// Register the compress command
-	useCommand(commands.compress, async (...args) => {
-		try {
-			logger.info(
-				`Command 'compress' invoked. Arguments: ${JSON.stringify(args)}`,
-			);
+	const getSelectedImageFiles = (args: any[]): Uri[] => {
+		// Command is now only available from context menu, so args are guaranteed.
+		const uris =
+			args.length > 1 && Array.isArray(args[1]) ? args[1] : [args[0]];
+		const selectedFiles = uris.filter(
+			(arg): arg is Uri => arg instanceof Uri,
+		);
 
-			let selectedFiles: Uri[] = [];
+		const imageFiles = selectedFiles.filter((file) => isImageFile(file.fsPath));
 
-			// Handle context menu invocation
-			if (args && args.length > 0) {
-				// The args from a context menu are typically structured as:
-				// args[0]: Uri of the item that was right-clicked
-				// args[1]: An array of Uris for all selected items (including the one from args[0])
-				const selectedUris =
-					args.length > 1 && Array.isArray(args[1]) ? args[1] : [args[0]];
+		if (imageFiles.length === 0) {
+			window.showWarningMessage("No supported image files found in selection.");
+			return [];
+		}
+		return imageFiles;
+	};
 
-				// Filter out any non-Uri arguments and flatten the array
-				selectedFiles = selectedUris.filter(
-					(arg): arg is Uri => arg instanceof Uri,
-				);
-			}
+	const compressFiles = async (
+		imageFiles: Uri[],
+		options: CompressionOptions,
+		title: string,
+	) => {
+		// (The rest of this function remains unchanged)
+		await window.withProgress(
+			{
+				location: ProgressLocation.Notification,
+				title,
+				cancellable: true,
+			},
+			async (progress, token) => {
+				let totalSavedBytes = 0;
+				const total = imageFiles.length;
 
-			// Handle command palette invocation (or if no files are selected in the explorer)
-			if (selectedFiles.length === 0) {
-				const editor = window.activeTextEditor;
-				if (editor) {
-					selectedFiles = [editor.document.uri];
-					logger.info(
-						`Fallback to active editor. Document URI: ${editor.document.uri.fsPath}`,
-					);
-				} else {
-					logger.info(`No active editor found.`);
-				}
-			}
-
-			logger.info(
-				`Processing files: ${selectedFiles.map((f) => f.fsPath).join(", ")}`,
-			);
-
-			if (selectedFiles.length === 0) {
-				window.showWarningMessage(
-					"Please select image files to compress or open an image file in the editor.",
-				);
-				return;
-			}
-
-			// Now your original logic can resume with the clean `selectedFiles` array.
-			// The rest of your code from here should be correct.
-
-			// Filter for image files
-			const imageFiles = selectedFiles.filter((file) =>
-				isImageFile(file.fsPath),
-			);
-
-			if (imageFiles.length === 0) {
-				window.showWarningMessage("No image files found in selection");
-				return;
-			}
-
-			logger.info(`Starting compression for ${imageFiles.length} image(s)`);
-
-			// Show progress notification with better visibility
-			await window.withProgress(
-				{
-					location: ProgressLocation.Notification,
-					title: "Compressing Images",
-					cancellable: true,
-				},
-				async (progress, token) => {
-					const total = imageFiles.length;
-					let completed = 0;
-					let totalSavedBytes = 0;
-
-					for (const file of imageFiles) {
-						if (token.isCancellationRequested) {
-							logger.info("Compression cancelled by user");
-							return;
-						}
+				const compressionPromises = imageFiles.map(
+					async (file) => {
+						if (token.isCancellationRequested) return;
 
 						const fileName = file.fsPath.split("/").pop() || file.fsPath;
-						progress.report({
-							message: `Compressing ${fileName}...`,
-							increment: 0,
-						});
+						progress.report({ message: `Compressing ${fileName}...` });
 
 						try {
-							const originalInfo = await getImageInfo(file.fsPath);
-							// Ensure file.fsPath is a string before passing to compressImage
-							const savedBytes = await compressImage(file.fsPath, {
-								quality: config.quality,
-								format: config.format,
-							});
-
-							if (savedBytes > 0) {
-								totalSavedBytes += savedBytes;
-								const compressionPercentage = Math.round(
-									(savedBytes / originalInfo.size) * 100,
-								);
-								logger.info(
-									`Compressed ${fileName}: saved ${savedBytes} bytes (${compressionPercentage}%)`,
-								);
+							const result = await compressImage(file.fsPath, options);
+							if (result.savedBytes > 0) {
+								totalSavedBytes += result.savedBytes;
 							}
 						} catch (error) {
 							logger.error(`Failed to compress ${fileName}:`, error);
 							window.showErrorMessage(
-								`Failed to compress ${fileName}: ${error instanceof Error ? error.message : String(error)}`,
+								`Failed to compress ${fileName}: ${error instanceof Error ? error.message : "Unknown error"}`,
 							);
+						} finally {
+							progress.report({ increment: 100 / total });
 						}
+					},
+				);
 
-						completed++;
-						progress.report({
-							increment: 100 / total,
-							message: `${completed}/${total} completed`,
-						});
-					}
+				await Promise.all(compressionPromises);
 
-					// Show completion message
-					if (totalSavedBytes > 0) {
-						window.showInformationMessage(
-							`Successfully compressed ${completed} image(s). Total space saved: ${formatSize(totalSavedBytes)}`,
-						);
-					} else {
-						window.showInformationMessage(
-							`Processed ${completed} image(s). No significant compression achieved.`,
-						);
-					}
-				},
-			);
-		} catch (error) {
-			logger.error("Error during compression:", error);
-			window.showErrorMessage(
-				`Error during compression: ${error instanceof Error ? error.message : String(error)}`,
-			);
-		}
+				if (token.isCancellationRequested) {
+					window.showInformationMessage("Compression cancelled.");
+					return;
+				}
+
+				if (totalSavedBytes > 0) {
+					window.showInformationMessage(
+						`Successfully compressed ${total} image(s). Total space saved: ${formatSize(totalSavedBytes)}.`,
+					);
+				} else {
+					window.showInformationMessage(
+						"No significant compression achieved for the selected images.",
+					);
+				}
+			},
+		);
+	};
+
+	useCommand(commands.compress, async (...args) => {
+		const imageFiles = getSelectedImageFiles(args);
+		if (imageFiles.length === 0) return;
+
+		const options: CompressionOptions = {
+			quality: config.quality,
+			format: config.format,
+		};
+		await compressFiles(imageFiles, options, "Compressing Images");
 	});
 
-	// Register the interactive compress command
 	useCommand(commands.compressInteractive, async (...args) => {
-		try {
-			logger.info(
-				`Command 'compress-interactive' invoked. Arguments: ${JSON.stringify(args)}`,
-			);
+		const imageFiles = getSelectedImageFiles(args);
+		if (imageFiles.length === 0) return;
 
-			let selectedFiles: Uri[] = [];
+		const maxWidth = await window.showInputBox({
+			prompt: "Enter maximum width (optional)",
+			placeHolder: "e.g., 1920",
+			validateInput: (v) => (v && !/^\d+$/.test(v) ? "Must be a number" : null),
+		});
+		if (maxWidth === undefined) return;
 
-			// Handle context menu invocation
-			if (args && args.length > 0) {
-				const selectedUris =
-					args.length > 1 && Array.isArray(args[1]) ? args[1] : [args[0]];
+		const quality = await window.showInputBox({
+			prompt: "Enter quality (1-100)",
+			value: String(config.quality),
+			validateInput: (v) =>
+				!/^\d+$/.test(v) || +v < 1 || +v > 100
+					? "Must be a number between 1-100"
+					: null,
+		});
+		if (!quality) return;
 
-				selectedFiles = selectedUris.filter(
-					(arg): arg is Uri => arg instanceof Uri,
-				);
-			}
-
-			// Handle command palette invocation
-			if (selectedFiles.length === 0) {
-				const editor = window.activeTextEditor;
-				if (editor) {
-					selectedFiles = [editor.document.uri];
-				}
-			}
-
-			if (selectedFiles.length === 0) {
-				window.showWarningMessage(
-					"Please select image files to compress or open an image file in the editor.",
-				);
-				return;
-			}
-
-			// Filter for image files
-			const imageFiles = selectedFiles.filter((file) =>
-				isImageFile(file.fsPath),
-			);
-
-			if (imageFiles.length === 0) {
-				window.showWarningMessage("No image files found in selection");
-				return;
-			}
-
-			// Show input dialog for max width
-			const maxWidth = await window.showInputBox({
-				prompt: "Enter maximum width (leave empty to keep original size)",
-				placeHolder: "e.g., 2000",
-				validateInput: (value) => {
-					if (value === "") return null; // Allow empty for no resize
-					const num = parseInt(value);
-					if (isNaN(num) || num <= 0) {
-						return "Please enter a valid positive number";
-					}
-					return null;
-				},
-			});
-
-			if (maxWidth === undefined) {
-				return; // User cancelled
-			}
-
-			// Show input dialog for quality
-			const qualityInput = await window.showInputBox({
-				prompt: "Enter compression quality (1-100)",
-				placeHolder: "e.g., 85",
-				value: config.quality.toString(),
-				validateInput: (value) => {
-					const num = parseInt(value);
-					if (isNaN(num) || num < 1 || num > 100) {
-						return "Please enter a number between 1 and 100";
-					}
-					return null;
-				},
-			});
-
-			if (qualityInput === undefined) {
-				return; // User cancelled
-			}
-
-			// Show format selection
-			const formatOptions = [
+		const format = await window.showQuickPick(
+			[
 				{ label: "Same as Source", value: "same-as-source" },
 				{ label: "JPG", value: "jpg" },
 				{ label: "PNG", value: "png" },
 				{ label: "WebP", value: "webp" },
 				{ label: "AVIF", value: "avif" },
-			];
+			],
+			{ placeHolder: "Select output format" },
+		);
+		if (!format) return;
 
-			const selectedFormat = await window.showQuickPick(formatOptions, {
-				placeHolder: "Select output format",
-				canPickMany: false,
-			});
+		const options: CompressionOptions = {
+			quality: parseInt(quality),
+			format: format.value as CompressionOptions["format"],
+			maxWidth: maxWidth ? parseInt(maxWidth) : undefined,
+		};
 
-			if (!selectedFormat) {
-				return; // User cancelled
-			}
-
-			const quality = parseInt(qualityInput);
-			const maxWidthNum = maxWidth === "" ? undefined : parseInt(maxWidth);
-
-			logger.info(
-				`Starting interactive compression for ${imageFiles.length} image(s) with quality: ${quality}, maxWidth: ${maxWidthNum || "original"}, format: ${selectedFormat.value}`,
-			);
-
-			// Show progress notification
-			await window.withProgress(
-				{
-					location: ProgressLocation.Notification,
-					title: `Compressing Images (${selectedFormat.label})`,
-					cancellable: true,
-				},
-				async (progress, token) => {
-					const total = imageFiles.length;
-					let completed = 0;
-					let totalSavedBytes = 0;
-
-					for (const file of imageFiles) {
-						if (token.isCancellationRequested) {
-							logger.info("Compression cancelled by user");
-							return;
-						}
-
-						const fileName = file.fsPath.split("/").pop() || file.fsPath;
-						progress.report({
-							message: `Compressing ${fileName}...`,
-							increment: 0,
-						});
-
-						try {
-							const originalInfo = await getImageInfo(file.fsPath);
-							const savedBytes = await compressImage(file.fsPath, {
-								quality: quality,
-								format: selectedFormat.value as
-									| "same-as-source"
-									| "jpg"
-									| "png"
-									| "webp"
-									| "avif",
-								maxWidth: maxWidthNum,
-							});
-
-							if (savedBytes > 0) {
-								totalSavedBytes += savedBytes;
-								const compressionPercentage = Math.round(
-									(savedBytes / originalInfo.size) * 100,
-								);
-								logger.info(
-									`Compressed ${fileName}: saved ${savedBytes} bytes (${compressionPercentage}%)`,
-								);
-							}
-						} catch (error) {
-							logger.error(`Failed to compress ${fileName}:`, error);
-							window.showErrorMessage(
-								`Failed to compress ${fileName}: ${error instanceof Error ? error.message : String(error)}`,
-							);
-						}
-
-						completed++;
-						progress.report({
-							increment: 100 / total,
-							message: `${completed}/${total} completed`,
-						});
-					}
-
-					// Show completion message
-					if (totalSavedBytes > 0) {
-						window.showInformationMessage(
-							`Successfully compressed ${completed} image(s). Total space saved: ${formatSize(totalSavedBytes)} (${Math.round((totalSavedBytes / total) * 100)}%)`,
-						);
-					} else {
-						window.showInformationMessage(
-							`Processed ${completed} image(s). No significant compression achieved.`,
-						);
-					}
-				},
-			);
-		} catch (error) {
-			logger.error("Error during interactive compression:", error);
-			window.showErrorMessage(
-				`Error during compression: ${error instanceof Error ? error.message : String(error)}`,
-			);
-		}
+		await compressFiles(
+			imageFiles,
+			options,
+			`Compressing to ${format.label}`,
+		);
 	});
 
 	logger.info("Tiny Image extension activated");
