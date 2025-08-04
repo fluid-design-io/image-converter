@@ -14,9 +14,7 @@ const { activate, deactivate } = defineExtension(() => {
 		// Command is now only available from context menu, so args are guaranteed.
 		const uris =
 			args.length > 1 && Array.isArray(args[1]) ? args[1] : [args[0]];
-		const selectedFiles = uris.filter(
-			(arg): arg is Uri => arg instanceof Uri,
-		);
+		const selectedFiles = uris.filter((arg): arg is Uri => arg instanceof Uri);
 
 		const imageFiles = selectedFiles.filter((file) => isImageFile(file.fsPath));
 
@@ -41,30 +39,30 @@ const { activate, deactivate } = defineExtension(() => {
 			},
 			async (progress, token) => {
 				let totalSavedBytes = 0;
+				let totalPercentageSaved = 0;
 				const total = imageFiles.length;
 
-				const compressionPromises = imageFiles.map(
-					async (file) => {
-						if (token.isCancellationRequested) return;
+				const compressionPromises = imageFiles.map(async (file) => {
+					if (token.isCancellationRequested) return;
 
-						const fileName = file.fsPath.split("/").pop() || file.fsPath;
-						progress.report({ message: `Compressing ${fileName}...` });
+					const fileName = file.fsPath.split("/").pop() || file.fsPath;
+					progress.report({ message: `Compressing ${fileName}...` });
 
-						try {
-							const result = await compressImage(file.fsPath, options);
-							if (result.savedBytes > 0) {
-								totalSavedBytes += result.savedBytes;
-							}
-						} catch (error) {
-							logger.error(`Failed to compress ${fileName}:`, error);
-							window.showErrorMessage(
-								`Failed to compress ${fileName}: ${error instanceof Error ? error.message : "Unknown error"}`,
-							);
-						} finally {
-							progress.report({ increment: 100 / total });
+					try {
+						const result = await compressImage(file.fsPath, options);
+						if (result.savedBytes > 0) {
+							totalSavedBytes += result.savedBytes;
+							totalPercentageSaved += result.percentageSaved;
 						}
-					},
-				);
+					} catch (error) {
+						logger.error(`Failed to compress ${fileName}:`, error);
+						window.showErrorMessage(
+							`Failed to compress ${fileName}: ${error instanceof Error ? error.message : "Unknown error"}`,
+						);
+					} finally {
+						progress.report({ increment: 100 / total });
+					}
+				});
 
 				await Promise.all(compressionPromises);
 
@@ -75,7 +73,7 @@ const { activate, deactivate } = defineExtension(() => {
 
 				if (totalSavedBytes > 0) {
 					window.showInformationMessage(
-						`Successfully compressed ${total} image(s). Total space saved: ${formatSize(totalSavedBytes)}.`,
+						`Successfully compressed ${total} image(s). Reduced by ${Math.round(totalPercentageSaved / total)}%. Total space saved: ${formatSize(totalSavedBytes)}.`,
 					);
 				} else {
 					window.showInformationMessage(
@@ -136,11 +134,7 @@ const { activate, deactivate } = defineExtension(() => {
 			maxWidth: maxWidth ? parseInt(maxWidth) : undefined,
 		};
 
-		await compressFiles(
-			imageFiles,
-			options,
-			`Compressing to ${format.label}`,
-		);
+		await compressFiles(imageFiles, options, `Compressing to ${format.label}`);
 	});
 
 	logger.info("Tiny Image extension activated");

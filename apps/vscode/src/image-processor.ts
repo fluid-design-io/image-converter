@@ -57,7 +57,12 @@ function getOutputExtension(format: string): string {
 export async function compressImage(
 	filePath: string,
 	options: CompressionOptions,
-): Promise<{ savedBytes: number; newSize: number; originalSize: number }> {
+): Promise<{
+	savedBytes: number;
+	newSize: number;
+	originalSize: number;
+	percentageSaved: number;
+}> {
 	try {
 		const originalBuffer = await fs.readFile(filePath);
 		const originalSize = originalBuffer.length;
@@ -80,7 +85,10 @@ export async function compressImage(
 				processor = processor.jpeg({ quality: options.quality, mozjpeg: true });
 				break;
 			case "png":
-				processor = processor.png({ quality: options.quality, compressionLevel: 9 });
+				processor = processor.png({
+					quality: options.quality,
+					compressionLevel: 9,
+				});
 				break;
 			case "webp":
 				processor = processor.webp({ quality: options.quality, effort: 6 });
@@ -96,10 +104,16 @@ export async function compressImage(
 		const compressedBuffer = await processor.toBuffer();
 		const newSize = compressedBuffer.length;
 		const savedBytes = originalSize - newSize;
+		const percentageSaved = (savedBytes / originalSize) * 100;
 
 		if (savedBytes < 0) {
 			logger.info(`Compressed file is larger for ${basename(filePath)}.`);
-			return { savedBytes: 0, newSize: originalSize, originalSize };
+			return {
+				savedBytes: 0,
+				newSize: originalSize,
+				originalSize,
+				percentageSaved: 0,
+			};
 		}
 
 		const dir = dirname(filePath);
@@ -109,10 +123,10 @@ export async function compressImage(
 		if (newPath.toLowerCase() !== filePath.toLowerCase()) {
 			await fs.unlink(filePath);
 		}
-		
+
 		await fs.writeFile(newPath, compressedBuffer);
 
-		return { savedBytes, newSize, originalSize };
+		return { savedBytes, newSize, originalSize, percentageSaved };
 	} catch (error) {
 		logger.error(`Error compressing ${filePath}:`, error);
 		throw new Error(

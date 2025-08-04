@@ -2,40 +2,33 @@
   "publisher": "fluid-design-io",
   "name": "tiny-image",
   "displayName": "Tiny Image",
-  "version": "0.0.0",
-  "private": true,
+  "repository": "https://github.com/fluid-design-io/image-converter/tree/main/apps/vscode",
+  "version": "1.0.0",
   "packageManager": "pnpm@10.4.1",
   "main": "./dist/index.js",
   "icon": "res/icon.png",
-  "files": [
-    "LICENSE.md",
-    "dist/*",
-    "res/*"
-  ],
   "engines": {
-    "vscode": "^1.97.0"
+    "vscode": "^1.99.3"
   },
   "contributes": {
     "commands": [
       {
-        "command": "compress",
-        "title": "Compress Images"
+        "command": "tiny-image.compress",
+        "title": "Tiny Image: Compress Images"
       },
       {
-        "command": "compress-interactive",
-        "title": "Compress Images with Options..."
+        "command": "tiny-image.compress-interactive",
+        "title": "Tiny Image: Compress Images with Options..."
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "compress",
-          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|webp|avif|tiff|tif|bmp|gif)$/i",
+          "command": "tiny-image.compress",
           "group": "7_modification"
         },
         {
-          "command": "compress-interactive",
-          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|webp|avif|tiff|tif|bmp|gif)$/i",
+          "command": "tiny-image.compress-interactive",
           "group": "7_modification"
         }
       ]
@@ -76,14 +69,14 @@
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts --external vscode",
+    "build": "tsdown src/index.ts --external vscode --external sharp",
     "dev": "nr build --watch --sourcemap",
     "prepare": "nr update",
     "update": "vscode-ext-gen --output src/generated/meta.ts",
     "lint": "eslint .",
     "vscode:prepublish": "nr build",
-    "publish": "vsce publish --no-dependencies",
-    "pack": "vsce package --no-dependencies",
+    "publish": "vsce publish",
+    "pack": "vsce package",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
     "release": "bumpp && nr publish"
@@ -92,7 +85,7 @@
     "@antfu/eslint-config": "^4.19.0",
     "@antfu/ni": "^23.3.1",
     "@types/node": "^22.17.0",
-    "@types/vscode": "^1.102.0",
+    "@types/vscode": "^1.99.3",
     "@vscode/vsce": "^3.6.0",
     "bumpp": "^10.2.2",
     "eslint": "^9.32.0",

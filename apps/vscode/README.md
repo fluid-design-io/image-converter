@@ -1,6 +1,6 @@
 # Tiny Image for VS Code
 
-![Tiny Image Icon](./res/icon.png)
+![Tiny Image Icon](https://github.com/fluid-design-io/image-converter/blob/main/apps/vscode/res/icon.png?raw=true)
 
 > The best compression tool is the one right in your editor.
 
@@ -39,10 +39,10 @@ For more control over the output:
 
 <!-- commands -->
 
-| Command                | Title                           |
-| ---------------------- | ------------------------------- |
-| `compress`             | Compress Images                 |
-| `compress-interactive` | Compress Images with Options... |
+| Command                           | Title                                       |
+| --------------------------------- | ------------------------------------------- |
+| `tiny-image.compress`             | Tiny Image: Compress Images                 |
+| `tiny-image.compress-interactive` | Tiny Image: Compress Images with Options... |
 
 <!-- commands -->
 
